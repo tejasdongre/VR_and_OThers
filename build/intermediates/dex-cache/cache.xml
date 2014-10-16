@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<pre-dex-items>
+
+    <item
+        dex="D:\Tejas\Projects\Other\Android\IoT_Git\VR\app\build\intermediates\pre-dexed\debug\armeabi-ae5a93037eb832119b83af573dc17a18c57ef8da.jar"
+        jar="D:\Tejas\Projects\Other\Android\IoT_Git\VR\app\libs\armeabi.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="d5a0d95ff9115fb8c3a8b2b9f76a2e6d65f2a227"/>
+    <item
+        dex="D:\Tejas\Projects\Other\Android\IoT_Git\VR\app\build\intermediates\pre-dexed\debug\Vuforia-88bbd106402879fd74848385c7a9f02189ee8170.jar"
+        jar="D:\Tejas\Projects\Other\Android\IoT_Git\VR\app\Vuforia\Vuforia.jar"
+        jumboMode="false"
+        revision="20.0.0"
+        sha1="65d210365ebcbcb3c5b93b6db0ca4126f6bcf46d"/>
+
+</pre-dex-items>
