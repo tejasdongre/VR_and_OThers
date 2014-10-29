@@ -3,20 +3,24 @@ package com.iot_pilot.shakelockunlock.app2;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.admin.DevicePolicyManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.util.Log;
 import android.view.Menu;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.view.MenuItem;
 import android.widget.Toast;
+import android.app.KeyguardManager;
 
 
 public class ShakeActivity extends Activity implements SensorEventListener{
@@ -25,7 +29,11 @@ public class ShakeActivity extends Activity implements SensorEventListener{
     ComponentName componentName;
     Sensor sensr;
     SensorManager sensorMngr ;
-
+    KeyguardManager keyGaurgMngr ;
+     KeyguardManager.KeyguardLock keygaurdLock;
+    PowerManager powerMngr;
+    PowerManager.WakeLock wakeLock;
+    BroadcastReceiver reciever;
     private long lastUpdate = 0;
     public static final int RESULT_ENABLE  = 1;
     private static final int SHAKE_THRESHOLD = 2000;
@@ -36,12 +44,39 @@ public class ShakeActivity extends Activity implements SensorEventListener{
         setContentView(R.layout.activity_shake);
         sensorMngr = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensr = sensorMngr.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        keyGaurgMngr = (KeyguardManager)getSystemService(Context.KEYGUARD_SERVICE);
+        keygaurdLock = keyGaurgMngr.newKeyguardLock("MyKeyGaurdLock");
+        powerMngr = (PowerManager)getSystemService(Context.POWER_SERVICE);
+        wakeLock = powerMngr.newWakeLock(PowerManager.FULL_WAKE_LOCK
+                | PowerManager.ACQUIRE_CAUSES_WAKEUP
+                | PowerManager.ON_AFTER_RELEASE, "MyWakeLock");
+        reciever = new ScreenWakeReciever(this);
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        registerReceiver(reciever,filter);
+
+
         //deviceManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
        // activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
        // componentName = new ComponentName(this, myAdminClass.class);
 
     }
 
+    public void PrintOnScreenOn()
+    {
+        Toast.makeText(this,"Screen is On",Toast.LENGTH_SHORT).show();
+        sensorMngr.registerListener(this, sensr, SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM);
+       //wakeLock.release();
+
+    }
+    public void PrintScreenIsOff()
+    {
+        Toast.makeText(this,"Screen is Off",Toast.LENGTH_SHORT).show();
+        sensorMngr.unregisterListener(this);
+            wakeLock.acquire();
+
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -77,6 +112,7 @@ public class ShakeActivity extends Activity implements SensorEventListener{
 
                 Log.v(String.valueOf(speed),"test");
                 Toast.makeText(this,String.valueOf(speed),Toast.LENGTH_SHORT).show();
+                wakeLock.acquire();
             }
         }
 
@@ -88,8 +124,8 @@ public class ShakeActivity extends Activity implements SensorEventListener{
     protected void onResume() {
         super.onResume();
        // sensorMngr.registerListener(this,SensorManager.SENSOR_ACCELEROMETER, SensorManager.SENSOR_DELAY_GAME);
-        //sensorMngr.registerListener(this, sensr, SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM);
-        sensorMngr.unregisterListener(this);
+        sensorMngr.registerListener(this, sensr, SensorManager.SENSOR_STATUS_ACCURACY_MEDIUM);
+        //sensorMngr.unregisterListener(this);
         //Intent devManagerIntent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
         //devManagerIntent.putExtra(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN, componentName);
         //devManagerIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Why??");
@@ -100,7 +136,7 @@ public class ShakeActivity extends Activity implements SensorEventListener{
     @Override
     protected void onPause() {
         super.onPause();
-        sensorMngr.unregisterListener(this);
+      //  sensorMngr.unregisterListener(this);
     }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
